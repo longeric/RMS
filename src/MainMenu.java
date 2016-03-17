@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.net.*;
+import java.util.Calendar;
+import java.util.Date;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.swing.*;
@@ -9,13 +11,15 @@ import java.awt.print.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.sql.*;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.io.*;
 
 class MainFrame extends JFrame{
 	
 	private TableNo fTableNo;
 	private Delivery fDelivery;
-	
+	private JPanel main;
 	
 	private JButton btnDineIn, btnPickup, btnDelivery, btnModifyCheck;
 	private JLabel lblRestaurantName;
@@ -25,6 +29,7 @@ class MainFrame extends JFrame{
 		btnDineIn.addActionListener(new DineInBtn());
 		btnDelivery.addActionListener(new DeliveryBtn());
 		btnPickup.addActionListener(new PickupBtn());
+		btnModifyCheck.addActionListener(new ModifyBtn());
 	}
 	private void initialize(){
 		this.setBounds(100, 100, 800, 600);
@@ -35,6 +40,8 @@ class MainFrame extends JFrame{
 		this.setLayout(null);
 		this.setVisible(true);
 		
+		//ImageIcon bgimage = new ImageIcon("icon.background.jpg");
+		//this.drawImage
 		btnDineIn = new JButton("Dine In");		
 		btnDineIn.setBounds(179, 145, 127, 43);
 		add(btnDineIn);		
@@ -51,7 +58,8 @@ class MainFrame extends JFrame{
 		lblRestaurantName.setHorizontalAlignment(SwingConstants.CENTER);
 		lblRestaurantName.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		lblRestaurantName.setBounds(273, 77, 181, 35);
-		add(lblRestaurantName);	
+		add(lblRestaurantName);
+		
 	}
 	private class DineInBtn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
@@ -61,7 +69,7 @@ class MainFrame extends JFrame{
 	}
 	private class PickupBtn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			DishSelect pickup = new DishSelect("Pick Up");
+			DishSelect pickup = new DishSelect("00");
 			
 		}
 	}
@@ -69,6 +77,11 @@ class MainFrame extends JFrame{
 		public void actionPerformed(ActionEvent e){
 			fDelivery = new Delivery();
 			
+		}
+	}
+	private class ModifyBtn implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new Modify();
 		}
 	}
 	
@@ -105,21 +118,22 @@ class TableNo extends JFrame{
 		this.setVisible(true);
 		Title = new JLabel("Select table no in the section");
 		//Title.setSize(600, 100);
-		tableArea = new JPanel();		
+		
+		tableArea = new JPanel();
 		tableArea.setLayout(new GridLayout(5,4,20,30));
 		tableArea.setBorder(BorderFactory.createTitledBorder("Table Area"));
 		this.add(Title,BorderLayout.NORTH);
 		this.add(tableArea,BorderLayout.CENTER);
-		table1 = new JButton("table1");
-		table2 = new JButton("table2");
-		table3 = new JButton("table3");
-		table4 = new JButton("table4");
-		table5 = new JButton("table5");		
-		table11 = new JButton("table11");
-		table12 = new JButton("table12");
-		table13 = new JButton("table13");
-		table14 = new JButton("table14");
-		table15 = new JButton("table15");		
+		table1 = new JButton("1");
+		table2 = new JButton("2");
+		table3 = new JButton("3");
+		table4 = new JButton("4");
+		table5 = new JButton("5");		
+		table11 = new JButton("11");
+		table12 = new JButton("12");
+		table13 = new JButton("13");
+		table14 = new JButton("14");
+		table15 = new JButton("15");		
 		tableArea.add(table1);
 		tableArea.add(table2);
 		tableArea.add(table3);
@@ -132,7 +146,25 @@ class TableNo extends JFrame{
 		tableArea.add(table15);	
 		//pack();
 	}
-
+	/*public void paintComponent(Graphics g){
+		int x=0,y=0;
+		java.net.URL imgURL=getClass().getResource("icon/background.jpg");
+	 
+		ImageIcon icon=new ImageIcon(imgURL);
+		g.drawImage(icon.getImage(),x,y,getSize().width,getSize().height,this);
+		while(true){
+			g.drawImage(icon.getImage(),x,y,this);
+		    if(x>getSize().width && y>getSize().height)
+		    	break;
+		           //这段代码是为了保证在窗口大于图片时，图片仍能覆盖整个窗口
+		     if(x>getSize().width){
+		    	 x=0;
+		    	 y+=icon.getIconHeight();
+		     }
+		     else
+		    	 x+=icon.getIconWidth();
+		}
+	}*/
 	private class Table1btn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			String id = table1.getText();
@@ -200,7 +232,7 @@ class DishSelect extends JFrame implements Printable{
 	private JPanel leftPanel;
 	private JPanel[] cardpanel;
 	private CardLayout card; 
-	private JButton lunch5, lunch1, lunch2, lunch3, lunch4;
+	private JButton lunch1, lunch2, lunch3, lunch4;
 	private JButton seafood1, seafood2,seafood3,seafood4; // text1,text2,text5,text6,text7,text8,text9,text10;			//need more
 	private JButton beef1, beef2, beef3, beef4;
 	private JButton chicken1, chicken2, chicken3, chicken4;
@@ -209,22 +241,26 @@ class DishSelect extends JFrame implements Printable{
 	private JButton soup1, soup2, soup3, soup4;
 	private JButton wine1, wine2, wine3, wine4;
 	private static double subtotal = 0.0;
-	private JTextField price1, price2, price3;		//need more
 	//middle panel, actually is the left
 	private JPanel midPanel;
 	private JButton btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8;
 	//dishpanel, aapear in the middle
 	private JPanel dishPanel;
-	private JLabel picLabel;
 	private JTextArea dishText;
-	private ImageIcon background;
 	//bottom panel, all button
 	private JPanel eventPanel;
-	private JButton sendBtn, deleteBtn, clearBtn, exitBtn;
+	private JButton calculateBtn, sendBtn, clearBtn, closeBtn, exitBtn;
+	private int tableNumber;
+	private static boolean[] ifClose = new boolean[100];
+	private static int checkNo = 0;
+	public String dishContent;
 	
 	public DishSelect(String id){
 		initialize(id);
-		exitBtn.addActionListener(new exitBtn());
+		//tableNumber = Integer.parseInt(id);
+		//ifClose[tableNumber] = false;
+				
+		//exitBtn.addActionListener(new exitBtn());
 		sendBtn.addActionListener(new sendBtn());
 		btn1.addActionListener(new ClassBtn());
 		btn2.addActionListener(new ClassBtn());
@@ -234,11 +270,47 @@ class DishSelect extends JFrame implements Printable{
 		btn6.addActionListener(new ClassBtn());
 		btn7.addActionListener(new ClassBtn());
 		btn8.addActionListener(new ClassBtn());
+		
 		lunch1.addActionListener(new ChooseBtn());
 		lunch2.addActionListener(new ChooseBtn());
+		lunch3.addActionListener(new ChooseBtn());
+		lunch4.addActionListener(new ChooseBtn());
+		seafood1.addActionListener(new ChooseBtn());
+		seafood2.addActionListener(new ChooseBtn());
+		seafood3.addActionListener(new ChooseBtn());
+		seafood4.addActionListener(new ChooseBtn());
+		beef1.addActionListener(new ChooseBtn());
+		beef2.addActionListener(new ChooseBtn());
+		beef3.addActionListener(new ChooseBtn());
+		beef4.addActionListener(new ChooseBtn());
+		chicken1.addActionListener(new ChooseBtn());
+		chicken2.addActionListener(new ChooseBtn());
+		chicken3.addActionListener(new ChooseBtn());
+		chicken4.addActionListener(new ChooseBtn());
+		noodle1.addActionListener(new ChooseBtn());
+		noodle2.addActionListener(new ChooseBtn());
+		noodle3.addActionListener(new ChooseBtn());
+		noodle4.addActionListener(new ChooseBtn());
+		sushi1.addActionListener(new ChooseBtn());
+		sushi2.addActionListener(new ChooseBtn());
+		sushi3.addActionListener(new ChooseBtn());
+		sushi4.addActionListener(new ChooseBtn());
+		soup1.addActionListener(new ChooseBtn());
+		soup2.addActionListener(new ChooseBtn());
+		soup3.addActionListener(new ChooseBtn());
+		soup4.addActionListener(new ChooseBtn());
+		wine1.addActionListener(new ChooseBtn());
+		wine2.addActionListener(new ChooseBtn());
+		wine3.addActionListener(new ChooseBtn());
+		wine4.addActionListener(new ChooseBtn());
+		
+		calculateBtn.addActionListener(new calculateBtn());
+		closeBtn.addActionListener(new closeBtn());
+		clearBtn.addActionListener(new clearBtn());
 	}
 	
 	private void initialize(String id){
+		checkNo = checkNo + 1;
 		this.setTitle("Please select your dishes");
 		this.setBounds(100, 100, 800, 600);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -247,8 +319,8 @@ class DishSelect extends JFrame implements Printable{
 		this.setResizable(false);
 		this.setVisible(true);
 		//set up the top border
-		title = new JLabel(id);
-		title.setBorder(BorderFactory.createTitledBorder("Welcome"));
+		title = new JLabel("Table "+id);
+		title.setBorder(BorderFactory.createTitledBorder("Welcome to XXX restaurant"));
 		title.setFont(new   java.awt.Font("Dialog",1,25));   
 		title.setForeground(Color.red);
 		this.add(title, BorderLayout.NORTH);
@@ -273,9 +345,17 @@ class DishSelect extends JFrame implements Printable{
 		soup1 = new JButton(); soup2 = new JButton(); soup3 = new JButton(); soup4 = new JButton();		
 		wine1 = new JButton(); wine2 = new JButton(); wine3 = new JButton(); wine4 = new JButton();
 		lunch1 = new JButton("Banana Bread French Toast -- $7.95");	//define lunch button 
+		ImageIcon lun1 = new ImageIcon("icon/banana-bread.jpg");
+		lunch1.setIcon(lun1);
 		lunch2 = new JButton("Rosted Turkey -- $9.95");
+		ImageIcon lun2 = new ImageIcon("icon/roasted-turkey.jpeg");
+		lunch2.setIcon(lun2);
 		lunch3 = new JButton("Pumplin waffle -- $8.95");
+		ImageIcon lun3 = new ImageIcon("icon/pumpkin-waffles.jpg");
+		lunch3.setIcon(lun3);
 		lunch4 = new JButton("Southwestern Club -- $6.95");
+		ImageIcon lun4 = new ImageIcon("icon/southwestern-club.jpg");
+		lunch4.setIcon(lun4);
 		cardpanel[0].add(lunch1);										//add lunch button
 		cardpanel[0].add(lunch2);
 		cardpanel[0].add(lunch3);
@@ -288,53 +368,96 @@ class DishSelect extends JFrame implements Printable{
 		ImageIcon  scallop = new ImageIcon("icon/scallop.jpg");
 		seafood2.setIcon(scallop);
 		seafood3 = new JButton("Salmon -- $15.95");
-		//ImageIcon salmon = new ImageIcon("icon/salmon.jpg");
-		seafood4 = new JButton("Combo -- $ 18.95");		
+		ImageIcon sea3 = new ImageIcon("icon/salmon.jpg");
+		seafood3.setIcon(sea3);
+		seafood4 = new JButton("Combo -- $ 18.95");	
+		ImageIcon sea4 = new ImageIcon("icon/combo-seafood.jpg");
+		seafood4.setIcon(sea4);
 		cardpanel[1].add(seafood1);									//add seafood button
 		cardpanel[1].add(seafood2);
 		cardpanel[1].add(seafood3);
 		cardpanel[1].add(seafood4);
 		
 		beef1 = new JButton("Jello with fruit -- $13.95");			//define beef button
+		ImageIcon bee1 = new ImageIcon("icon/jello-beef.jpeg");
+		beef1.setIcon(bee1);
 		beef2 = new JButton("Beef with broccoli -- $12.95");
+		ImageIcon bee2 = new ImageIcon("icon/beef-broccoli.jpg");
+		beef2.setIcon(bee2);
 		beef3 = new JButton("Filet Steak -- $16.95");
+		ImageIcon bee3 = new ImageIcon("icon/filet-steak.jpg");
+		beef3.setIcon(bee3);
 		beef4 = new JButton("Beef Sirloin -- $14.95");
+		ImageIcon bee4 = new ImageIcon("icon/beef-sirloin.jpg");
+		beef4.setIcon(bee4);
 		cardpanel[2].add(beef1);										//add beef button
 		cardpanel[2].add(beef2);
 		cardpanel[2].add(beef3);
 		cardpanel[2].add(beef4);
 		
 		chicken1 = new JButton("Bufflo Chicken -- $10.45");			//define chicken button
+		ImageIcon chick1 = new ImageIcon("icon/bufflo-chicken.jpg");
+		chicken1.setIcon(chick1);
 		chicken2 = new JButton("Buttermilk Chicken -- $11.95");
+		ImageIcon chick2 = new ImageIcon("icon/buttermilk-chicken.jpg");
+		chicken2.setIcon(chick2);
 		chicken3 = new JButton("Chicken sandwich -- $9.95");
+		ImageIcon chick3 = new ImageIcon("icon/chicken-sandwich.jpg");
+		chicken3.setIcon(chick3);
 		chicken4 = new JButton("Chicken salad combo-- $12.95");
+		ImageIcon chick4 = new ImageIcon("icon/chicken-salad.jpg");
+		chicken4.setIcon(chick4);
 		cardpanel[3].add(chicken1);									//add chicken button
 		cardpanel[3].add(chicken2);
 		cardpanel[3].add(chicken3);
 		cardpanel[3].add(chicken4);
 		
 		noodle1 = new JButton("Penne Rosa -- $12.45");				//define noodle button
+		ImageIcon nood1 = new ImageIcon("icon/penne-rosa.jpg");
+		noodle1.setIcon(nood1);
 		noodle2 = new JButton("Japanese Pan Noodles -- $14.95");
+		ImageIcon nood2 = new ImageIcon("icon/japanese-noodle.jpg");
+		noodle2.setIcon(nood2);
 		noodle3 = new JButton("MacCheese Pad -- $13.95");
+		ImageIcon nood3 = new ImageIcon("icon/maccheese-pad.jpg");
+		noodle3.setIcon(nood3);
 		noodle4 = new JButton("Whole Grain Fresca -- $15.95");
+		ImageIcon nood4 = new ImageIcon("icon/whole-fresca.jpg");
+		noodle4.setIcon(nood4);
 		cardpanel[4].add(noodle1);									//add noodle button
 		cardpanel[4].add(noodle2);
 		cardpanel[4].add(noodle3);
 		cardpanel[4].add(noodle4);
 		
 		sushi1 = new JButton("California Roll -- $6.45");				//define sushi button
+		ImageIcon sush1 = new ImageIcon("icon/california-roll.jpg");
+		sushi1.setIcon(sush1);
 		sushi2 = new JButton("Spicy Tuna Roll -- $6.95");
+		ImageIcon sush2 = new ImageIcon("icon/spicy-tuna.jpg");
+		sushi2.setIcon(sush2);
 		sushi3 = new JButton("Amazing Roll -- $7.95");
+		ImageIcon sush3 = new ImageIcon("icon/amazing-roll.jpg");
+		sushi3.setIcon(sush3);
 		sushi4 = new JButton("Turando Roll -- $8.95");
+		ImageIcon sush4 = new ImageIcon("icon/turnado-roll.jpg");
+		sushi4.setIcon(sush4);
 		cardpanel[5].add(sushi1);										//add sushi button
 		cardpanel[5].add(sushi2);
 		cardpanel[5].add(sushi3);
 		cardpanel[5].add(sushi4);
 		
 		soup1 = new JButton("Hot & Sour Soup -- $2.45");				//define soup button
+		ImageIcon sou1 = new ImageIcon("icon/hot-and-sour-soup.jpg");
+		soup1.setIcon(sou1);
 		soup2 = new JButton("Creme Chicken Soup -- $5.95");
+		ImageIcon sou2 = new ImageIcon("icon/creamchickensoup.jpeg");
+		soup2.setIcon(sou2);
 		soup3 = new JButton("Turkey Chill Soup -- $4.95");
+		ImageIcon sou3 = new ImageIcon("icon/turkey-chill-soup.jpg");
+		soup3.setIcon(sou3);
 		soup4 = new JButton("Broccoli Cheddar Soup -- $3.95");
+		ImageIcon sou4 = new ImageIcon("icon/broccoli-cheddar.jpg");
+		soup4.setIcon(sou4);
 		cardpanel[6].add(soup1);										//add soup button
 		cardpanel[6].add(soup2);
 		cardpanel[6].add(soup3);
@@ -391,25 +514,30 @@ class DishSelect extends JFrame implements Printable{
 		//background = new ImageIcon("Seafood.jpg");
 		dishPanel = new JPanel();
 		dishText = new JTextArea(20,20);
-		dishPanel.add(dishText);
+		dishText.setSize(40,60);
+		//dishPanel.add(dishText);
 		//picLabel = new JLabel(background);
 		//this.add(picLabel,BorderLayout.CENTER);
-		this.add(dishPanel,BorderLayout.CENTER);
+		this.add(dishText,BorderLayout.CENTER);
 		
 		//set up the bottom panel
 		eventPanel = new JPanel();
 		eventPanel.setLayout(new FlowLayout());
-		sendBtn = new JButton("Send to Kitchen");
-		deleteBtn = new JButton("Delete item");
-		clearBtn = new JButton("clear");
-		exitBtn = new JButton("Exit");
-		
+		sendBtn = new JButton("Send Kitchen");
+		closeBtn = new JButton("Close check");
+		clearBtn = new JButton("clear & Exit");
+		//exitBtn = new JButton("Exit");
+		calculateBtn = new JButton("Calculate");
+		eventPanel.add(calculateBtn);
 		eventPanel.add(sendBtn);
-		eventPanel.add(deleteBtn);
+		eventPanel.add(closeBtn);
 		eventPanel.add(clearBtn);
-		eventPanel.add(exitBtn);
+		//eventPanel.add(exitBtn);
 		//pack();
 		this.add(eventPanel,BorderLayout.SOUTH);
+	}
+	private String getContent(){
+		return dishText.getText();
 	}
 	
 	private class ChooseBtn implements ActionListener{
@@ -419,8 +547,128 @@ class DishSelect extends JFrame implements Printable{
 				dishText.append("Banana Bread French Toast -- $7.95\n");
 			}
 			else if(e.getSource() == lunch2){
-				subtotal = subtotal + 4.5;
-				dishText.append("Another\n");
+				subtotal = subtotal + 9.95;
+				dishText.append("Rosted Tuekry -- $9.95\n");
+			}
+			else if(e.getSource() == lunch3){
+				subtotal = subtotal + 8.95;
+				dishText.append("Pumpklin waffle -- $8.95\n");
+			}
+			else if(e.getSource() == lunch4){
+				subtotal = subtotal + 6.95;
+				dishText.append("Southwestern Club -- $6.95\n");
+			}
+			else if(e.getSource() == seafood1){
+				subtotal = subtotal + 11.95;
+				dishText.append("Crab -- $11.95\n");
+			}
+			else if(e.getSource() == seafood2){
+				subtotal = subtotal + 12.95;
+				dishText.append("Scallop -- $12.95\n");
+			}
+			else if(e.getSource() == seafood3){
+				subtotal = subtotal + 15.95;
+				dishText.append("Salmon -- $15.95\n");
+			}
+			else if(e.getSource() == seafood4){
+				subtotal = subtotal + 18.95;
+				dishText.append("Combo -- $18.95\n");
+			}
+			else if(e.getSource() == beef1){
+				subtotal = subtotal + 13.95;
+				dishText.append("Jello with fruit -- $13.95\n");
+			}
+			else if(e.getSource() == beef2){
+				subtotal = subtotal + 12.95;
+				dishText.append("Beef with broccoli -- $12.95\n");
+			}
+			else if(e.getSource() == beef3){
+				subtotal = subtotal + 16.95;
+				dishText.append("Filet Steak -- $16.95\n");
+			}
+			else if(e.getSource() == beef4){
+				subtotal = subtotal + 14.95;
+				dishText.append("Beef Sirloin -- $14.95\n");
+			}
+			else if(e.getSource() == chicken1){
+				subtotal = subtotal + 10.45;
+				dishText.append("Bufflo Chicken -- $10.45\n");
+			}
+			else if(e.getSource() == chicken2){
+				subtotal = subtotal + 11.95;
+				dishText.append("Buttermilk Chicken -- $11.95\n");
+			}
+			else if(e.getSource() == chicken3){
+				subtotal = subtotal + 9.95;
+				dishText.append("Chicken sandwich -- $9.95\n");
+			}
+			else if(e.getSource() == chicken4){
+				subtotal = subtotal + 12.95;
+				dishText.append("Chicken salad combo -- $12.95\n");
+			}
+			else if(e.getSource() == noodle1){
+				subtotal = subtotal + 12.45;
+				dishText.append("Penna Rosa -- $12.45\n");
+			}
+			else if(e.getSource() == noodle2){
+				subtotal = subtotal + 14.95;
+				dishText.append("Japanese Pan Noodles -- $14.95\n");
+			}
+			else if(e.getSource() == noodle3){
+				subtotal = subtotal + 13.95;
+				dishText.append("MacCheese Pad -- $13.95\n");
+			}
+			else if(e.getSource() == noodle4){
+				subtotal = subtotal + 15.95;
+				dishText.append("Whole Grain Fresca -- $15.95\n");
+			}
+			else if(e.getSource() == sushi1){
+				subtotal = subtotal + 6.45;
+				dishText.append("California Roll -- $6.45\n");
+			}
+			else if(e.getSource() == sushi2){
+				subtotal = subtotal + 6.95;
+				dishText.append("Spicy Tuna Roll -- $6.95\n");
+			}
+			else if(e.getSource() == sushi3){
+				subtotal = subtotal + 7.95;
+				dishText.append("Amazing Roll -- $7.95\n");
+			}
+			else if(e.getSource() == sushi4){
+				subtotal = subtotal + 8.95;
+				dishText.append("Turnado Roll -- $8.95\n");
+			}
+			else if(e.getSource() == soup1){
+				subtotal = subtotal + 2.45;
+				dishText.append("Hot&Sour soup -- $2.45\n");
+			}
+			else if(e.getSource() == soup2){
+				subtotal = subtotal + 5.95;
+				dishText.append("Creme Chicken Soup -- $5.95\n");
+			}
+			else if(e.getSource() == soup3){
+				subtotal = subtotal + 4.95;
+				dishText.append("Turkey Chill Soup -- $4.95\n");
+			}
+			else if(e.getSource() == soup4){
+				subtotal = subtotal + 3.95;
+				dishText.append("Broccoli Cheddar Soup -- $3.95\n");
+			}
+			else if(e.getSource() == wine1){
+				subtotal = subtotal + 6.45;
+				dishText.append("Plum Wine -- $6.45\n");
+			}
+			else if(e.getSource() == wine2){
+				subtotal = subtotal + 5.95;
+				dishText.append("Merlot -- $5.95\n");
+			}
+			else if(e.getSource() == wine3){
+				subtotal = subtotal + 7.95;
+				dishText.append("Chardonnay -- $7.95\n");
+			}
+			else if(e.getSource() == wine4){
+				subtotal = subtotal + 4.95;
+				dishText.append("Whisky -- $4.95\n");
 			}
 		}		
 	}
@@ -444,7 +692,14 @@ class DishSelect extends JFrame implements Printable{
 				card.show(leftPanel, "wine");
 		}		
 	}
-	
+	private class calculateBtn implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			DecimalFormat dollar = new DecimalFormat("0.00");
+			dishText.append("************************************");
+			dishText.append("\nSubtotal: "+ String.valueOf(dollar.format(subtotal))+"\nTotal: "+ String.valueOf(dollar.format(subtotal*1.07)));
+			dishText.append("\n-----------------------------------\n");
+		}
+	}
 	private class sendBtn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			//add a communication to a print, need socket
@@ -452,6 +707,7 @@ class DishSelect extends JFrame implements Printable{
 			
 			//****************
 			PrinterJob job = PrinterJob.getPrinterJob();
+
 			boolean doPrint = job.printDialog();
 			if (doPrint) {
 			    try {
@@ -463,19 +719,64 @@ class DishSelect extends JFrame implements Printable{
 			    }
 			}
 		}		
-	}private class deleteBtn implements ActionListener{
+	}
+	
+	private class closeBtn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			//delete last item
+			//ifClose[tableNumber] = true;
+			Date d = new Date();
+			SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy"); 
+			String dateStr = sdf.format(d);
+			
+			Connection conn = null;
+			Statement stmt = null;
+			try{
+			      Class.forName("com.mysql.jdbc.Driver");
+			      conn = DriverManager.getConnection("jdbc:mysql://localhost/restaurant","root","ylwwtqq");
+			      stmt = conn.createStatement(); 
+			      String insert = "INSERT INTO history "
+					+ "VALUES ( '" + dateStr + "', " + checkNo + ", '" + dishText.getText() + "', " + subtotal*1.07 + ")";
+			      stmt.executeUpdate(insert);
+			      JOptionPane.showMessageDialog(null, "Check succesfully added.");
+			      
+			      stmt.close();
+			      conn.close();
+			}catch(SQLException se){
+				if(se.getErrorCode() == 1007)
+					System.out.println(se.getMessage());
+				else
+		      //Handle errors for JDBC
+					se.printStackTrace();
+		   }catch(Exception ee){
+		      //Handle errors for Class.forName
+			   ee.printStackTrace();
+		   }finally{
+		      //finally block used to close resources
+			   try{
+				   if(stmt!=null)
+					   stmt.close();
+			   }catch(SQLException se2){
+			   }
+			   try{
+				   if(conn!=null)
+					   conn.close();
+			   }catch(SQLException se){
+				   se.printStackTrace();
+			   }//end finally try
+		   }
 		}
+		
 	}
 	private class clearBtn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			subtotal = 0;
-			//clean all JTextArea
+			dishText.setText("");
+			dispose();
 		}		
 	}
 	private class exitBtn implements ActionListener{
 		public void actionPerformed(ActionEvent e){
+			//subtotal = 0;
 			dispose();
 		}		
 	}
@@ -488,16 +789,13 @@ class DishSelect extends JFrame implements Printable{
 	         return NO_SUCH_PAGE;
 	    }
 	    System.out.println("Now print something");
-	    // User (0,0) is typically outside the
-	    // imageable area, so we must translate
-	    // by the X and Y values in the PageFormat
-	    // to avoid clipping.
+
 	    Graphics2D g2d = (Graphics2D)gp;
 	    g2d.setColor(Color.black);
 	    g2d.translate(pf.getImageableX(), pf.getImageableY());
 
 	    // Now we perform our rendering
-	    gp.drawString("Hello world!", 100, 100);
+	    gp.drawString(dishText.getText(), 100, 100);
 
 	    // tell the caller that this page is part
 	    // of the printed document
@@ -508,7 +806,7 @@ class DishSelect extends JFrame implements Printable{
 public class MainMenu {
 
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-	static final String host = "jdbc:mysql://localhost/";
+	static final String host = "jdbc:mysql://localhost/restaurant";
 	//  Database credentials
 	static final String USER = "root";			//user in my computer
 	static final String PASS = "ylwwtqq";
@@ -536,7 +834,7 @@ public class MainMenu {
 	/**
 	 * Create the application.
 	 */
-	public MainMenu() {
+	public MainMenu(){
 		initialize();
 		Connection conn = null;
 		Statement stmt = null;
@@ -548,10 +846,32 @@ public class MainMenu {
 	      conn = DriverManager.getConnection(host,USER,PASS);
 	      stmt = conn.createStatement(); 
 	      
-	      createDatabase = "CREATE DATABASE restaurant";
+	      /*createDatabase = "CREATE DATABASE restaurant";
 	      stmt.executeUpdate(createDatabase);
-	      System.out.println("The database restaurant created.");
+	      System.out.println("The database restaurant created.");*/
 	      
+	      /*String createTable = "CREATE TABLE customer "
+	      		+ " ( phone VARCHAR(20) not null, "
+	      		+ "name VARCHAR(30) not null, "
+	      		+ "address VARCHAR(50) not null, "
+	      		+ "city VARCHAR(20) not null, "
+	      		+ "st VARCHAR(10) not null, "
+	      		+ "zip INTEGER not null,"
+	      		+ "PRIMARY KEY (phone) ) "; 
+	      stmt.executeUpdate(createTable);
+	      System.out.println("Table customer created");*/
+	      
+	      stmt.executeUpdate("DROP TABLE history");
+	      System.out.println("delete table");
+	      
+	      String createHistory = "CREATE TABLE history "
+	      		+ "( date VARCHAR(20) not null, "
+	      		+ "checkNo INT(10) not null, "
+	      		+ "content VARCHAR(1000) not null, "
+	      		+ "total float(6,4) not null, "
+	      		+ "PRIMARY KEY (date,checkNo) )";
+	      stmt.executeUpdate(createHistory);
+	      System.out.println("Table History created");  
 	      
 	      stmt.close();
 	      conn.close();
@@ -588,42 +908,7 @@ public class MainMenu {
 	private void initialize() {
 		mainFrame = new MainFrame();
 		//mainFrame.setVisible(true);
-		/*
-		frame = new JFrame();
-		frame.setBounds(100, 100, 800, 600);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
-		
-		JButton btnDineIn = new JButton("Dine In");
-		btnDineIn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JFrame fDineIn = new JFrame();
-				fDineIn.setSize(400,300);
-				fDineIn.setVisible(true);
-				frame.setVisible(false);
-			}
-		});
-		btnDineIn.setBounds(179, 145, 127, 43);
-		frame.getContentPane().add(btnDineIn);
-		
-		JButton btnPickup = new JButton("Pick up");
-		btnPickup.setBounds(412, 145, 127, 43);
-		frame.getContentPane().add(btnPickup);
-		
-		JButton btnDelivery = new JButton("Delivery");
-		btnDelivery.setBounds(179, 199, 127, 43);
-		frame.getContentPane().add(btnDelivery);
-		
-		JButton btnModifyCheck = new JButton("Modify Check");
-		btnModifyCheck.setBounds(412, 199, 127, 43);
-		frame.getContentPane().add(btnModifyCheck);
-		
-		JLabel lblRestaurantName = new JLabel("Restaurant name");
-		lblRestaurantName.setHorizontalAlignment(SwingConstants.CENTER);
-		lblRestaurantName.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblRestaurantName.setBounds(273, 77, 181, 35);
-		frame.getContentPane().add(lblRestaurantName);
-		*/
+
 		
 	}
 }
